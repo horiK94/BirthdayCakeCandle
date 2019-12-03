@@ -50,18 +50,26 @@ public class CandleManager : MonoBehaviour
     {
         audioSource = GetComponent<AudioSource>();
         currentValues = new float[SampleNum];
-        if ((audioSource != null) && (Microphone.devices.Length > 0)) // オーディオソースとマイクがある
+        if (audioSource == null)
         {
-            string devName = Microphone.devices[0]; // 複数見つかってもとりあえず0番目のマイクを使用
-            int minFreq, maxFreq = 0;
-            Microphone.GetDeviceCaps(devName, out minFreq, out maxFreq); // 最大最小サンプリング数を得る
-            int ms = minFreq / SampleNum; // サンプリング時間を適切に取る
-            audioSource.loop = true; // ループにする
-            audioSource.clip = Microphone.Start(devName, true, ms, minFreq); // clipをマイクに設定
-            while (!(Microphone.GetPosition(devName) > 0)) { } // きちんと値をとるために待つ
-            Microphone.GetPosition(null);
-            audioSource.Play();
+            Debug.LogAssertion("audioSourceをアタッチしてください");
+            return;
         }
+        if (Microphone.devices.Length == 0)
+        {
+            //マイクが見つからないとき
+            Debug.LogAssertion("マイクを接続してください");
+            return;
+        }
+        string devName = Microphone.devices[0]; // 複数見つかってもとりあえず0番目のマイクを使用
+        int minFreq, maxFreq = 0;
+        Microphone.GetDeviceCaps(devName, out minFreq, out maxFreq); // 最大最小サンプリング数を得る
+        int ms = minFreq / SampleNum; // サンプリング時間を適切に取る
+        audioSource.loop = true; // ループにする
+        audioSource.clip = Microphone.Start(devName, true, ms, minFreq); // clipをマイクに設定
+        while (!(Microphone.GetPosition(devName) > 0)) { } // きちんと値をとるために待つ
+        Microphone.GetPosition(null);
+        audioSource.Play();
 
         candleRenderer = new CandleRenderer[candleNum];
         Vector3 leftPos = new Vector3(-candleNum + 1, 0, 0);
